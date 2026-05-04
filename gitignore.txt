@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+
+# Datasets — do not commit raw data
+data/
+datasets/
+*.csv
+*.tsv
+*.zip
+*.tar.gz
+
+# HuggingFace cache
+cached_*
+*.arrow
+*.lock
+~/.cache/huggingface/
+
+# Model checkpoints (large files)
+*.pth
+*.pt
+*.bin
+*.safetensors
+checkpoints/
+saved_models/
+runs/
+
+# Logs
+logs/
+*.log
+tensorboard/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Kaggle
+kaggle.json
