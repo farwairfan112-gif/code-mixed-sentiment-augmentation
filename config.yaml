@@ -1,0 +1,56 @@
+# Configuration for Code-Mixed Sentiment Analysis
+# CLAT + CDWL + LAAF Experiments
+
+# Model configuration
+model:
+  name: "XLM-T"  # Options: "XLM-T", "mBERT"
+  max_seq_len: 64
+  batch_size: 32
+  learning_rate: 5e-5
+  weight_decay: 0.01
+  epsilon: 1e-8
+  num_epochs: 3
+  num_labels: 3
+  warmup_epochs: 2 #for LAAF
+  joint_epochs: 3
+  dropout: 0.1
+
+# Data configuration
+data:
+  hinglish_train: "data/Hinglish_train_14k_split_conll.txt"
+  hinglish_dev: "data/Hinglish_dev_3k_split_conll.txt"
+  hinglish_test_text: "data/Hinglish_test_unlabelled_conll_updated.txt"
+  hinglish_test_labels: "data/Hinglish_test_labels.txt"
+  sp_en_train: "data/LLM-CMSA/Spanish-English/ensp_natural_train.csv"
+  sp_en_dev: "data/LLM-CMSA/Spanish-English/ensp_natural_dev.csv"
+  sp_en_synthetic: "data/LLM-CMSA/Spanish-English/ensp_synthetic_llm-generated.csv"
+  ma_en_train: "data/LLM-CMSA/Malayalam-English/enma_natural_train.csv"
+  ma_en_dev: "data/LLM-CMSA/Malayalam-English/enma_natural_dev.csv"
+  ma_en_test: "data/LLM-CMSA/Malayalam-English/enma_natural_test.csv"
+  ma_en_synthetic: "data/LLM-CMSA/Malayalam-English/enma_synthetic_llm-generated.csv"
+  
+  augmentation:
+    sp_en_transfer_size: 15000
+    ma_en_transfer_size: 15000
+  
+  random_seed: 42
+  val_split: 0.1
+
+# Paths
+paths:
+  checkpoint_dir: "checkpoints/"
+  results_dir: "results/"
+  plots_dir: "plots/"
+
+# Label mapping
+labels:
+  Positive: 0
+  Negative: 1
+  Neutral: 2
+
+# Experiments to run (extension)
+experiments:
+  baseline: ["C1", "C2", "C3", "C4"]
+  cdwl: ["W1", "W2", "W3", "W4"]
+  laaf: ["L1", "L2", "L3", "L4"]
+  combined: ["CL1", "CL2", "CL3", "CL4", "CL5", "CL6"]
