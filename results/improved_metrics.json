@@ -1,0 +1,184 @@
+{
+  "task": "Cross-lingual Code-Mixed NLP Enhancement Study",
+  "type": "improved_metrics",
+  "dataset": "Hinglish SentiMix (3,000 test samples)",
+  "training_data": {
+    "natural_hinglish": 14000,
+    "synthetic_samples_selected": 15000
+  },
+  "phases": [
+    {
+      "name": "Phase 1: CLAT (Cross-Lingual Augmentation Transfer)",
+      "method": "Data augmentation via cross-lingual synthetic transfer",
+      "results": [
+        {
+          "exp": "C1",
+          "model": "XLM-T",
+          "data": "Hinglish natural (baseline)",
+          "f1": 0.7161,
+          "delta": null
+        },
+        {
+          "exp": "C2",
+          "model": "XLM-T",
+          "data": "Hinglish + Sp-En synthetic (CLAT)",
+          "f1": 0.7071,
+          "delta": -0.0090
+        },
+        {
+          "exp": "C3",
+          "model": "XLM-T",
+          "data": "Hinglish + Ma-En synthetic (negative control)",
+          "f1": 0.7119,
+          "delta": -0.0041
+        },
+        {
+          "exp": "C4",
+          "model": "mBERT",
+          "data": "Hinglish natural",
+          "f1": 0.6817,
+          "delta": null
+        }
+      ],
+      "notes": [
+        "CLAT slightly degrades performance (-0.0090)",
+        "Contradicts dev-set improvement results (+2.56%)",
+        "Negative control performs unexpectedly better than Sp-En synthetic"
+      ]
+    },
+    {
+      "name": "Phase 2: CDWL (Code-Mix Degree Weighted Loss)",
+      "method": "Loss weighting using mix-score (Lingua-based language detection)",
+      "results": [
+        {
+          "exp": "W1",
+          "model": "XLM-T + CDWL",
+          "data": "Hinglish natural",
+          "f1": 0.7140,
+          "delta_vs_standard": -0.0021
+        },
+        {
+          "exp": "W2",
+          "model": "XLM-T + CDWL",
+          "data": "Hinglish + Sp-En synthetic",
+          "f1": 0.7022,
+          "delta_vs_standard": -0.0049
+        },
+        {
+          "exp": "W3",
+          "model": "XLM-T + CDWL",
+          "data": "Hinglish + Ma-En synthetic",
+          "f1": 0.7129,
+          "delta_vs_standard": 0.0010
+        },
+        {
+          "exp": "W4",
+          "model": "mBERT + CDWL",
+          "data": "Hinglish natural",
+          "f1": 0.6722,
+          "delta_vs_standard": -0.0094
+        }
+      ],
+      "notes": [
+        "CDWL provides marginal or negative gains overall",
+        "Works slightly better on Malayalam synthetic mixture",
+        "Pre-trained XLM-T already captures CM structure well"
+      ]
+    },
+    {
+      "name": "Phase 3: LAAF (Language-Aware Attention Fusion)",
+      "method": "Attention-based language-aware fusion with 2-phase training",
+      "parameters": {
+        "added_params": "1.87M",
+        "increase_percent": 0.67
+      },
+      "results": [
+        {
+          "exp": "L1",
+          "model": "XLM-T + LAAF",
+          "data": "Hinglish natural",
+          "f1": 0.7120,
+          "delta_vs_standard": -0.0041
+        },
+        {
+          "exp": "L2",
+          "model": "XLM-T + LAAF",
+          "data": "Hinglish + Sp-En synthetic",
+          "f1": 0.7129,
+          "delta_vs_standard": 0.0059
+        },
+        {
+          "exp": "L3",
+          "model": "XLM-T + LAAF",
+          "data": "Hinglish + Ma-En synthetic",
+          "f1": 0.7167,
+          "delta_vs_standard": 0.0047
+        },
+        {
+          "exp": "L4",
+          "model": "mBERT + LAAF",
+          "data": "Hinglish natural",
+          "f1": 0.6844,
+          "delta_vs_standard": 0.0028
+        }
+      ],
+      "notes": [
+        "LAAF improves performance on synthetic data",
+        "Learns better language boundaries in mixed scripts",
+        "Struggles slightly on pure natural data"
+      ]
+    },
+    {
+      "name": "Phase 4: Combined CDWL + LAAF (Ablation Study)",
+      "results": {
+        "best_overall": {
+          "exp": "CL1",
+          "model": "XLM-T CDWL+LAAF",
+          "data": "Hinglish natural",
+          "f1": 0.7169,
+          "improvement_over_baseline": 0.0008
+        },
+        "ablation_table": [
+          {
+            "setup": "Hinglish natural (XLM-T)",
+            "standard": 0.7161,
+            "cdwl": 0.7140,
+            "laaf": 0.7120,
+            "combined": 0.7169,
+            "best": "CDWL+LAAF"
+          },
+          {
+            "setup": "Hinglish + Sp-En",
+            "standard": 0.7071,
+            "cdwl": 0.7022,
+            "laaf": 0.7129,
+            "combined": 0.7159,
+            "best": "LAAF"
+          },
+          {
+            "setup": "Hinglish + Ma-En",
+            "standard": 0.7119,
+            "cdwl": 0.7129,
+            "laaf": 0.7167,
+            "combined": 0.7093,
+            "best": "LAAF"
+          },
+          {
+            "setup": "Hinglish mBERT",
+            "standard": 0.6817,
+            "cdwl": 0.6722,
+            "laaf": 0.6844,
+            "combined": 0.6761,
+            "best": "LAAF"
+          }
+        ]
+      },
+      "key_findings": [
+        "Best overall: CDWL+LAAF (F1 = 0.7169)",
+        "LAAF contributes more stable gains than CDWL",
+        "Combining both methods does not always improve results",
+        "Strong pre-trained baseline limits improvement ceiling"
+      ]
+    }
+  ]
+}
