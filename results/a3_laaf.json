@@ -1,0 +1,58 @@
+[
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "> 2-phase training: Phase 1 (encoder frozen, LAAF head warmup with auxiliary lang supervision, LR=1.5e-4, 2 epochs) → Phase 2 (full model, joint training, 3 epochs).",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "> Adds 1.87M parameters (+0.67% over XLM-T base).",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "Exp",
+    "": "vs Standard"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "---",
+    "": "---"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "L1",
+    "": "−0.0041 vs C1"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "L2",
+    "": "+0.0059 vs C2"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "L3",
+    "": "+0.0047 vs C3"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "L4",
+    "": "+0.0028 vs C4"
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "**Notes:**",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "- LAAF improves when synthetic data is present (L2: +0.0059, L3: +0.0047) but slightly hurts without it (L1: −0.0041)",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "- Language scorer learns useful language boundaries when training data contains CM patterns from multiple sources",
+    "": ""
+  },
+  {
+    "# Results — Phase 3: LAAF (Language-Aware Attention Fusion)": "- Romanized Hinglish (same Latin script for both English and Hindi) makes unsupervised language boundary detection inherently difficult",
+    "": ""
+  }
+]

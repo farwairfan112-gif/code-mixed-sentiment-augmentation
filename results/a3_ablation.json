@@ -1,0 +1,122 @@
+[
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "## Combined Results (CDWL + LAAF)",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Exp",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "---",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL1",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL2",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL3",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL4",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL5",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "CL6",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "---",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "## Full Ablation Summary",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Setup",
+    "": "Best Method"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "---",
+    "": "---"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Hinglish natural (XLM-T)",
+    "": "CDWL+LAAF (+0.0008)"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Hinglish + Sp-En",
+    "": "LAAF (+0.0059 vs std)"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Hinglish + Ma-En",
+    "": "LAAF (+0.0047 vs std)"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "Hinglish mBERT",
+    "": "LAAF (+0.0028)"
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "---",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "## Key Findings",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "- **Best result overall:** CL1 — CDWL+LAAF on Hinglish natural data (F1 = 0.7169, +0.0008 over XLM-T baseline)",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "- **LAAF wins more setups** than CDWL+LAAF combined, suggesting CDWL adds noise when combined",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "- **CLAT finding:** Apparent +2.56% gain with dev-as-test collapses to −0.90% on proper test split — evaluation protocol is critical",
+    "": ""
+  },
+  {
+    "# Results — Phase 4: Combined CDWL+LAAF & Full Ablation": "- **Strong baseline problem:** XLM-T (pre-trained on 198M multilingual tweets) already handles Hinglish well; marginal gains are hard to achieve",
+    "": ""
+  }
+]

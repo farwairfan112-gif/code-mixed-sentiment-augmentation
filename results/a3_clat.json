@@ -1,0 +1,58 @@
+[
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "> Evaluated on Hinglish SentiMix official test set (3,000 samples).",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "> 15,000 samples selected from source synthetic dataset and combined with Hinglish natural training data (14,000 samples).",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "Exp",
+    "": "vs C1"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "---",
+    "": "---"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "C1",
+    "": "—"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "C2",
+    "": "−0.0090"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "C3",
+    "": "−0.0041"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "C4",
+    "": "—"
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "**Notes:**",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "- CLAT slightly degrades performance on the official test set (−0.0090)",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "- This contradicts earlier dev-set results showing +2.56% improvement — highlighting the risk of proxy evaluation",
+    "": ""
+  },
+  {
+    "# Results — Phase 1: CLAT (Cross-Lingual Augmentation Transfer)": "- Negative control (Ma-En synthetic) shows slightly less degradation than the supposedly compatible Sp-En data, suggesting structural CM compatibility is not sufficient for successful transfer when the base dataset is already large (14k)",
+    "": ""
+  }
+]
