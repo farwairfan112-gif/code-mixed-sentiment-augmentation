@@ -136,7 +136,7 @@ Demonstrates:
 
 ## Experiments Summary
 
-### Reproduction (Assignment 2) — 10/13 within 0.04 F1
+### Reproduction (Task 2) — 10/13 within 0.04 F1
 
 | Exp | Model | Dataset | Paper F1 | Repro F1 | Diff |
 |-----|-------|---------|----------|----------|------|
@@ -147,7 +147,7 @@ Demonstrates:
 | A5  | XLM-T | Sp-En Nat+Random | 0.563 | 0.581 | +0.018 |
 | C2  | XLM-T | Ma-En Natural | 0.843 | 0.734 | −0.109 |
 
-### Extension (Assignment 3) — Hinglish Ablation
+### Extension (Task 3) — Hinglish Ablation
 
 | Method | Natural | +Sp-En Syn | +Ma-En Syn | mBERT |
 |--------|---------|------------|------------|-------|
