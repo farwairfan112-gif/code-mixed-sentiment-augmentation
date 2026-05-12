@@ -1,32 +1,25 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# config.yaml  —  LLM-CMSA Sentiment Analysis Project
-# Paper: "Leveraging Large Language Models for Code-Mixed Data Augmentation
-#         in Sentiment Analysis"  (Linda Zeng, SICon @ EMNLP 2024)
-# ─────────────────────────────────────────────────────────────────────────────
+# config.yaml — LLM-CMSA Project Configuration
+# Paper: "Cross-Lingual Synthetic Augmentation and Language-Aware Training
+#         for Code-Mixed Sentiment Analysis" (Farwa Irfan et al., 2025)
 
-# ── Models ───────────────────────────────────────────────────────────────────
 models:
   mBERT: "bert-base-multilingual-cased"
   XLM-T: "cardiffnlp/twitter-xlm-roberta-base"
 
-# ── Training Hyperparameters (Appendix B.2 of paper) ─────────────────────────
 training:
   num_labels:    3          # Positive / Negative / Neutral
-  max_seq_len:   40         # As specified in paper
-  batch_size:    32         # As specified in paper
+  max_seq_len:   64         # Extension experiments (reproduction used 40)
+  batch_size:    32
   learning_rate: 5.0e-5
   weight_decay:  0.01
   epsilon:       1.0e-8
-  num_epochs:    3          # 3 epochs per stage
+  num_epochs:    3
   seed:          42
 
-# ── Gradual Fine-Tuning Stages (paper Section 3.3) ───────────────────────────
 gradual_finetuning:
-  stage_lrs:      [1.0e-6, 2.0e-6, 2.0e-6, 4.0e-6, 2.0e-6]
-  syn_sizes:      [50000,  25000,  15000,   5000,   0]       # synthetic samples per stage
+  stage_lrs:   [1.0e-6, 2.0e-6, 2.0e-6, 4.0e-6, 2.0e-6]
+  syn_sizes:   [50000,  25000,  15000,   5000,   0]
 
-# ── Dataset Paths ─────────────────────────────────────────────────────────────
-# Clone from: https://github.com/lindazeng979/LLM-CMSA
 data:
   repo_url: "https://github.com/lindazeng979/LLM-CMSA.git"
   repo_dir: "LLM-CMSA"
@@ -34,7 +27,7 @@ data:
   spanish_english:
     train_natural:    "LLM-CMSA/Spanish-English/ensp_natural_train.csv"
     dev_natural:      "LLM-CMSA/Spanish-English/ensp_natural_dev.csv"
-    test_natural:     "LLM-CMSA/Spanish-English/ensp_natural_test.csv"   # blind set
+    test_natural:     "LLM-CMSA/Spanish-English/ensp_natural_dev.csv"   # proxy
     synthetic_llm:    "LLM-CMSA/Spanish-English/ensp_synthetic_llm-generated.csv"
     synthetic_random: "LLM-CMSA/Spanish-English/ensp_synthetic_randomly-translated.csv"
 
@@ -44,30 +37,23 @@ data:
     test_natural:     "LLM-CMSA/Malayalam-English/enma_natural_test.csv"
     synthetic_llm:    "LLM-CMSA/Malayalam-English/enma_synthetic_llm-generated.csv"
 
-# ── Evaluation Setup ─────────────────────────────────────────────────────────
-# The LinCE online benchmark (ritual.uh.edu) is inaccessible and test labels
-# for Sp-En are not publicly available.  Instructor-approved workaround:
-#   Sp-En  → evaluate on the official dev set (1,859 samples) as test proxy
-#   Ma-En  → evaluate on the official test set (1,000 samples) as in the paper
-evaluation:
-  spanish_english_test_proxy: "official_dev_set"
-  malayalam_english_test:     "official_test_set"
+  hinglish:
+    train: "data/sentimix_train.csv"
+    dev:   "data/sentimix_dev.csv"
+    test:  "data/sentimix_test.csv"
+    # Download: https://github.com/dipteshkanojia/challengeSentimix
 
-# ── Label Mapping ─────────────────────────────────────────────────────────────
 labels:
   Positive: 0
   Negative: 1
   Neutral:  2
 
-# ── Output Directories ────────────────────────────────────────────────────────
 output:
   checkpoints: "checkpoints/"
   results:     "results/"
   plots:       "results/plots/"
 
-# ── Primary Experiment (professor-approved single run) ───────────────────────
-# Run Experiment 1: Spanish-English Full 12k  →  XLM-T Natural Only (baseline)
-# This is the fastest single experiment and produces the primary checkpoint.
+# Professor-approved single experiment
 primary_experiment:
   name:       "sp_xlmt_natural"
   model:      "XLM-T"
