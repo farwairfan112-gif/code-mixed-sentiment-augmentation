@@ -1,50 +1,30 @@
 """
-Dataset classes for Sentiment Analysis with Code-Mixed text
-Supports:
-- Standard dataset (text, labels)
-- CDWL dataset (with mix_score for loss weighting)
-- LAAF dataset (with token-level language labels)
+dataset.py — Data loading, preprocessing, and PyTorch Dataset classes.
 """
 
-import torch
-import pandas as pd
-from torch.utils.data import Dataset
-from lingua import Language, LanguageDetectorBuilder
+import os
 import re
+import subprocess
+
 import emoji
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader, Dataset
 
-
-# Global language detector (English vs Hindi)
-LANG_DETECTOR = None
-
-LABEL2ID = {'Positive': 0, 'Negative': 1, 'Neutral': 2}
-
-
-def init_language_detector():
-    """Initialize the lingua language detector for English vs Hindi"""
-    global LANG_DETECTOR
-    if LANG_DETECTOR is None:
-        LANG_DETECTOR = LanguageDetectorBuilder.from_languages(
-            Language.ENGLISH, Language.HINDI
-        ).with_low_accuracy_mode().build()
-    return LANG_DETECTOR
-
-
-# ============================================================
-# Preprocessing functions (copy from your notebook)
-# ============================================================
+# ── Label mappings ─────────────────────────────────────────────────────────
+LABEL2ID = {"Positive": 0, "Negative": 1, "Neutral": 2}
+ID2LABEL = {0: "Positive", 1: "Negative", 2: "Neutral"}
 
 LABEL_NORMALIZE = {
-    'positive': 'Positive', 'negative': 'Negative', 'neutral': 'Neutral',
-    'Positive': 'Positive', 'Negative': 'Negative', 'Neutral': 'Neutral',
-    'POSITIVE': 'Positive', 'NEGATIVE': 'Negative', 'NEUTRAL': 'Neutral',
-    'pos': 'Positive', 'neg': 'Negative', 'neu': 'Neutral',
-    'POS': 'Positive', 'NEG': 'Negative', 'NEU': 'Neutral',
-    '0': 'Positive', '1': 'Negative', '2': 'Neutral',
-    0: 'Positive', 1: 'Negative', 2: 'Neutral',
-    'Mixed_feelings': 'Neutral', 'mixed_feelings': 'Neutral',
-    'Non malayalam': None, 'not-malayalam': None,
-    'Unknown': None, 'unknown': None, 'nan': None,
+    "positive": "Positive", "negative": "Negative", "neutral": "Neutral",
+    "Positive": "Positive", "Negative": "Negative", "Neutral": "Neutral",
+    "POSITIVE": "Positive", "NEGATIVE": "Negative", "NEUTRAL": "Neutral",
+    "pos": "Positive", "neg": "Negative", "neu": "Neutral",
+    "0": "Positive", "1": "Negative", "2": "Neutral",
+    0: "Positive",   1: "Negative",   2: "Neutral",
+    "Mixed_feelings": "Neutral", "mixed_feelings": "Neutral",
+    "Non malayalam": None, "not-malayalam": None,
+    "Unknown": None, "unknown": None, "non_malayalam": None, "nan": None,
 }
 
 
@@ -54,216 +34,176 @@ def normalize_label(x):
     if x in LABEL_NORMALIZE:
         return LABEL_NORMALIZE[x]
     s = str(x).strip()
-    if s in LABEL_NORMALIZE:
-        return LABEL_NORMALIZE[s]
-    if s.capitalize() in LABEL_NORMALIZE:
-        return LABEL_NORMALIZE[s.capitalize()]
-    return None
+    return LABEL_NORMALIZE.get(s, LABEL_NORMALIZE.get(s.capitalize(), None))
 
 
-def clean_text(text):
+def clean_text(text: str) -> str:
+    """Preprocessing per paper Section 3.1."""
     if not isinstance(text, str):
-        return ''
-    text = emoji.demojize(text, delimiters=(' ', ' '))
-    text = re.sub(r'http\S+|www\S+', '', text)
-    text = re.sub(r'#(\w+)', r'\1', text)
-    text = re.sub(r'[^\w\s\'\".,!?;:\-]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
+        return ""
+    text = emoji.demojize(text, delimiters=(" ", " "))
+    text = re.sub(r"http\S+|www\S+", "", text)
+    text = re.sub(r"#(\w+)", r"\1", text)
+    text = re.sub(r"[^\w\s\'\".,!?;:\-]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
-def code_mix_score(text, lang_detector, cap_at_half=False):
+def compute_mix_score(text: str) -> float:
     """
-    CM degree: fraction of words detected as Hindi (non-English).
-    FIX 1: Uses lingua for proper Romanized Hindi detection.
-    cap_at_half: FIX 5 - for Ma-En data to prevent script inflation.
+    Lingua-based word-level CM degree score.
+    Returns proportion of non-English words (proxy for L2 tokens).
+    Falls back to ASCII heuristic if lingua unavailable.
     """
-    words = text.split()
-    if not words:
-        return 0.0
-    hindi_count = 0
-    for w in words:
-        detected = lang_detector.detect_language_of(w)
-        if detected == Language.HINDI:
-            hindi_count += 1
-    score = hindi_count / len(words)
-    if cap_at_half:
-        score = min(score, 0.5)
-    return score
+    try:
+        from lingua import Language, LanguageDetectorBuilder
+        detector = LanguageDetectorBuilder.from_languages(
+            Language.ENGLISH, Language.HINDI, Language.SPANISH
+        ).build()
+        words = text.split()
+        if not words:
+            return 0.0
+        non_eng = sum(
+            1 for w in words
+            if detector.detect_language_of(w) not in (Language.ENGLISH, None)
+        )
+        return non_eng / len(words)
+    except Exception:
+        # fallback: fraction of non-ASCII chars
+        non_ascii = sum(1 for c in text if ord(c) > 127)
+        return min(non_ascii / max(len(text), 1), 1.0)
 
 
-def preprocess_df(df, name='', cap_mix_at_half=False):
-    """Preprocess dataframe: clean text, normalize labels, compute mix_score"""
-    detector = init_language_detector()
-    
+def preprocess_df(df: pd.DataFrame, name: str = "",
+                  add_mix_score: bool = False) -> pd.DataFrame:
     df = df.copy()
-    df = df.loc[:, ~df.columns.astype(str).str.lower().str.startswith('unnamed')]
+    df = df.loc[:, ~df.columns.astype(str).str.lower().str.startswith("unnamed")]
     df.columns = [str(c).strip().lower() for c in df.columns]
-    
-    if 'sentence' in df.columns:
-        df = df.rename(columns={'sentence': 'text'})
-    if 'text' not in df.columns:
-        df.columns = ['text', 'label'] + list(df.columns[2:])
-    
-    if 'label' not in df.columns:
-        print(f'  [{name}] No label column — blind test set, skipping')
+    if "sentence" in df.columns:
+        df = df.rename(columns={"sentence": "text"})
+    if "text" not in df.columns and len(df.columns) >= 2:
+        df.columns = ["text", "label"] + list(df.columns[2:])
+    if "label" not in df.columns:
+        print(f"  [{name}] No label column — skipping.")
         return None
-    
-    df['label'] = df['label'].apply(normalize_label)
-    before = len(df)
-    df = df[df['label'].notna()].copy()
-    if before != len(df):
-        print(f'  [{name}] Dropped {before - len(df)} invalid rows')
-    
-    df['text'] = df['text'].apply(clean_text)
-    df = df[df['text'].str.len() > 0].copy()
-    df['label_id'] = df['label'].map(LABEL2ID).astype(int)
-    df['mix_score'] = df['text'].apply(lambda t: code_mix_score(t, detector, cap_at_half=cap_mix_at_half))
-    
-    print(f'  [{name}] {len(df)} samples | avg_mix: {df["mix_score"].mean():.3f}')
-    return df[['text', 'label', 'label_id', 'mix_score']].reset_index(drop=True)
+    df["label"] = df["label"].apply(normalize_label)
+    df = df[df["label"].notna()].copy()
+    df["text"] = df["text"].apply(clean_text)
+    df = df[df["text"].str.len() > 0].copy()
+    df["label_id"] = df["label"].map(LABEL2ID).astype(int)
+    if add_mix_score and "mix_score" not in df.columns:
+        df["mix_score"] = df["text"].apply(compute_mix_score).clip(0, 1)
+    print(f"  [{name}] {len(df)} rows")
+    return df.reset_index(drop=True)
 
 
-def load_conll(file_path):
-    """Parse CONLL format file for SentiMix dataset"""
-    sentences, labels = [], []
-    current_sentence, current_label = [], None
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                if current_sentence and current_label is not None:
-                    sentences.append(' '.join(current_sentence))
-                    labels.append(current_label)
-                    current_sentence = []
-                    current_label = None
-            elif line.startswith('meta\t'):
-                parts = line.split('\t')
-                current_label = parts[-1].strip().capitalize()
-            else:
-                word = line.split()[0]
-                current_sentence.append(word)
-
-    if current_sentence and current_label is not None:
-        sentences.append(' '.join(current_sentence))
-        labels.append(current_label)
-
-    return pd.DataFrame({'text': sentences, 'label': labels})
+def download_data(repo_url="https://github.com/lindazeng979/LLM-CMSA.git",
+                  repo_dir="LLM-CMSA"):
+    if not os.path.exists(repo_dir):
+        subprocess.run(["git", "clone", repo_url], check=True)
+        print("Repository cloned.")
+    else:
+        print(f"Repository already at ./{repo_dir}")
 
 
-# ============================================================
-# Dataset Classes
-# ============================================================
+# ── PyTorch Datasets ───────────────────────────────────────────────────────
 
 class SentimentDataset(Dataset):
-    """Standard dataset for sentiment classification"""
+    """Standard dataset: input_ids, attention_mask, labels."""
     def __init__(self, df, tokenizer, max_len=64):
-        self.texts = df['text'].tolist()
-        self.labels = df['label_id'].tolist()
-        self.tok = tokenizer
-        self.max_len = max_len
+        self.texts     = df["text"].tolist()
+        self.labels    = df["label_id"].tolist()
+        self.tokenizer = tokenizer
+        self.max_len   = max_len
 
     def __len__(self):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        enc = self.tok(self.texts[idx], max_length=self.max_len,
-                       padding='max_length', truncation=True, return_tensors='pt')
+        enc = self.tokenizer(
+            self.texts[idx], max_length=self.max_len,
+            padding="max_length", truncation=True, return_tensors="pt",
+        )
         return {
-            'input_ids': enc['input_ids'].squeeze(),
-            'attention_mask': enc['attention_mask'].squeeze(),
-            'labels': torch.tensor(self.labels[idx], dtype=torch.long)
+            "input_ids":      enc["input_ids"].squeeze(),
+            "attention_mask": enc["attention_mask"].squeeze(),
+            "labels":         torch.tensor(self.labels[idx], dtype=torch.long),
         }
 
 
-class CMDataset(Dataset):
-    """Dataset that returns mix_score for CDWL loss weighting."""
+class CMDataset(SentimentDataset):
+    """Adds mix_score field for CDWL training."""
     def __init__(self, df, tokenizer, max_len=64):
-        self.texts = df['text'].tolist()
-        self.labels = df['label_id'].tolist()
-        self.mix_scores = df['mix_score'].tolist()
-        self.tok = tokenizer
-        self.max_len = max_len
-
-    def __len__(self):
-        return len(self.texts)
+        super().__init__(df, tokenizer, max_len)
+        if "mix_score" not in df.columns:
+            df = df.copy()
+            df["mix_score"] = df["text"].apply(compute_mix_score).clip(0, 1)
+        self.mix_scores = df["mix_score"].tolist()
 
     def __getitem__(self, idx):
-        enc = self.tok(self.texts[idx], max_length=self.max_len,
-                       padding='max_length', truncation=True, return_tensors='pt')
-        return {
-            'input_ids': enc['input_ids'].squeeze(),
-            'attention_mask': enc['attention_mask'].squeeze(),
-            'labels': torch.tensor(self.labels[idx], dtype=torch.long),
-            'mix_score': torch.tensor(self.mix_scores[idx], dtype=torch.float)
-        }
+        item = super().__getitem__(idx)
+        item["mix_score"] = torch.tensor(self.mix_scores[idx], dtype=torch.float)
+        return item
 
 
-class LAAFDataset(Dataset):
-    """
-    Dataset for LAAF that also returns per-token language labels.
-    FIX 2: Used in Phase 1 warmup to provide supervision for lang_scorer.
-    """
+class LAAFDataset(SentimentDataset):
+    """Adds token_lang field (per-token P(English)) for LAAF Phase-1 supervision."""
     def __init__(self, df, tokenizer, max_len=64):
-        self.texts = df['text'].tolist()
-        self.labels = df['label_id'].tolist()
-        self.tok = tokenizer
-        self.max_len = max_len
-        
-        detector = init_language_detector()
-        
-        # Pre-compute per-sentence word language labels
-        self.word_lang_labels = []
-        for t in self.texts:
-            wls = []
-            for w in t.split():
-                det = detector.detect_language_of(w)
-                wls.append(1.0 if det == Language.ENGLISH else 0.0)
-            self.word_lang_labels.append(wls)
+        super().__init__(df, tokenizer, max_len)
 
-    def __len__(self):
-        return len(self.texts)
+    def _get_token_lang(self, text, encoding):
+        """
+        Assign 1.0 (English) or 0.0 (L2) per token using simple heuristic.
+        Words that are pure ASCII → English; others → L2.
+        """
+        try:
+            tokens     = self.tokenizer.convert_ids_to_tokens(
+                encoding["input_ids"].squeeze().tolist()
+            )
+            token_lang = []
+            for tok in tokens:
+                clean = tok.replace("▁", "").replace("##", "")
+                token_lang.append(1.0 if clean.isascii() else 0.0)
+            return torch.tensor(token_lang[:self.max_len], dtype=torch.float)
+        except Exception:
+            return torch.ones(self.max_len, dtype=torch.float)
 
     def __getitem__(self, idx):
-        enc = self.tok(self.texts[idx], max_length=self.max_len,
-                       padding='max_length', truncation=True,
-                       return_tensors='pt', return_offsets_mapping=False)
-        input_ids = enc['input_ids'].squeeze()
-        attention_mask = enc['attention_mask'].squeeze()
-
-        # Build token-level language labels by word alignment
-        word_labels = self.word_lang_labels[idx]
-        token_lang = torch.zeros(self.max_len, dtype=torch.float)
-        words = self.texts[idx].split()
-        pos = 1  # skip [CLS] / <s>
-        
-        for wi, w in enumerate(words):
-            if pos >= self.max_len - 1:
-                break
-            wtoks = self.tok(w, add_special_tokens=False)['input_ids']
-            lang_val = word_labels[wi] if wi < len(word_labels) else 0.5
-            for _ in wtoks:
-                if pos < self.max_len - 1:
-                    token_lang[pos] = lang_val
-                    pos += 1
-
-        return {
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'labels': torch.tensor(self.labels[idx], dtype=torch.long),
-            'token_lang': token_lang
+        enc = self.tokenizer(
+            self.texts[idx], max_length=self.max_len,
+            padding="max_length", truncation=True, return_tensors="pt",
+        )
+        item = {
+            "input_ids":      enc["input_ids"].squeeze(),
+            "attention_mask": enc["attention_mask"].squeeze(),
+            "labels":         torch.tensor(self.labels[idx], dtype=torch.long),
+            "token_lang":     self._get_token_lang(self.texts[idx], enc),
         }
+        return item
 
 
-def build_loader(df, tokenizer, batch_size=32, shuffle=True, 
-                 with_mix_score=False, with_token_lang=False, max_len=64):
-    """Build dataloader with appropriate dataset class"""
-    if with_token_lang:
-        cls = LAAFDataset
-    elif with_mix_score:
-        cls = CMDataset
-    else:
-        cls = SentimentDataset
-    return DataLoader(cls(df, tokenizer, max_len), batch_size=batch_size,
-                      shuffle=shuffle, num_workers=2)
+def build_loader(df, tokenizer, batch_size=32, shuffle=True,
+                 max_len=64, num_workers=2):
+    ds = SentimentDataset(df, tokenizer, max_len=max_len)
+    return DataLoader(ds, batch_size=batch_size,
+                      shuffle=shuffle, num_workers=num_workers)
+
+
+# ── Sample data ────────────────────────────────────────────────────────────
+def create_sample_data(path="data/sample_data.csv"):
+    rows = [
+        ("I love this! It's amazing",       "Positive"),
+        ("Odio esto completamente horrible", "Negative"),
+        ("The product is okay nothing special", "Neutral"),
+        ("Me encanta que bueno que lo hicieron", "Positive"),
+        ("This is the worst experience ever",  "Negative"),
+        ("No me parece ni bueno ni malo",      "Neutral"),
+        ("Absolutely fantastic result",        "Positive"),
+        ("Terribly disappointed with this",    "Negative"),
+        ("yaar ye toh bahut achha hai",        "Positive"),
+        ("bilkul bekar hai ye cheez",          "Negative"),
+    ]
+    df = pd.DataFrame(rows, columns=["text", "label"])
+    df["label_id"] = df["label"].map(LABEL2ID)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    df.to_csv(path, index=False)
+    print(f"Sample data saved → {path}")
