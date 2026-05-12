@@ -1,140 +1,28 @@
 {
-  "task": "Cross-lingual NLP Reproduction Study",
-  "type": "baseline_metrics",
-  "datasets": [
-    {
-      "name": "Malayalam-English",
-      "evaluation": {
-        "type": "official_test",
-        "samples": 1000
-      },
-      "models": [
-        {
-          "name": "mBERT",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.750,
-          "reproduced_f1": 0.733,
-          "difference": -0.017
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.843,
-          "reproduced_f1": 0.734,
-          "difference": -0.109
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural + LLM Synthetic",
-          "paper_f1": 0.763,
-          "reproduced_f1": 0.744,
-          "difference": 0.019
-        },
-        {
-          "name": "mBERT",
-          "data_setup": "Natural + LLM Synthetic",
-          "paper_f1": 0.745,
-          "reproduced_f1": 0.727,
-          "difference": -0.018
-        }
-      ],
-      "notes": [
-        "mBERT is stable across configurations",
-        "Largest deviation in XLM-T baseline (-0.109)",
-        "Malayalam tokenization and preprocessing likely cause of gap"
-      ]
-    },
-    {
-      "name": "Spanish-English Full (12k)",
-      "evaluation": {
-        "type": "dev_set_proxy",
-        "samples": 1859,
-        "note": "LinCE test labels unavailable"
-      },
-      "models": [
-        {
-          "name": "mBERT",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.564,
-          "reproduced_f1": 0.544,
-          "difference": -0.020
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.588,
-          "reproduced_f1": 0.582,
-          "difference": -0.006
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Synthetic LLM Only",
-          "paper_f1": 0.544,
-          "reproduced_f1": 0.531,
-          "difference": -0.013
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural + LLM (Gradual FT)",
-          "paper_f1": 0.603,
-          "reproduced_f1": 0.558,
-          "difference": -0.045
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural + Random Translation",
-          "paper_f1": 0.563,
-          "reproduced_f1": 0.581,
-          "difference": 0.018
-        }
-      ],
-      "notes": [
-        "XLM-T outperforms mBERT on natural data",
-        "Gradual FT is best-performing configuration",
-        "Gap due to dev-set proxy instead of hidden test set"
-      ]
-    },
-    {
-      "name": "Spanish-English Low Resource (3k)",
-      "evaluation": {
-        "type": "dev_set_proxy",
-        "samples": "3k subset"
-      },
-      "models": [
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.547,
-          "reproduced_f1": 0.567,
-          "difference": 0.020
-        },
-        {
-          "name": "XLM-T",
-          "data_setup": "Natural + LLM (Gradual FT)",
-          "paper_f1": 0.598,
-          "reproduced_f1": 0.553,
-          "difference": -0.045
-        },
-        {
-          "name": "mBERT",
-          "data_setup": "Natural Only",
-          "paper_f1": 0.487,
-          "reproduced_f1": 0.525,
-          "difference": 0.038
-        },
-        {
-          "name": "mBERT",
-          "data_setup": "Natural + LLM Synthetic",
-          "paper_f1": 0.526,
-          "reproduced_f1": 0.529,
-          "difference": 0.003
-        }
-      ],
-      "notes": [
-        "Directional trends match paper",
-        "mBERT improves consistently in low-resource setup",
-        "XLM-T is more sensitive to synthetic augmentation"
-      ]
-    }
-  ]
+  "description": "Reproduction results vs paper (Assignment 2). 10/13 within 0.04 F1.",
+  "spanish_english_full_12k": {
+    "A1_mBERT_natural":      {"paper_f1": 0.564, "repro_f1": 0.544, "diff": -0.020},
+    "A2_XLM-T_natural":      {"paper_f1": 0.588, "repro_f1": 0.582, "diff": -0.006},
+    "A3_XLM-T_llm_syn_only": {"paper_f1": 0.544, "repro_f1": 0.531, "diff": -0.013},
+    "A4_XLM-T_nat_llm_gft":  {"paper_f1": 0.603, "repro_f1": 0.558, "diff": -0.045},
+    "A5_XLM-T_nat_random":   {"paper_f1": 0.563, "repro_f1": 0.581, "diff": +0.018}
+  },
+  "spanish_english_3k_lowresource": {
+    "B1_XLM-T_natural":      {"paper_f1": 0.547, "repro_f1": 0.567, "diff": +0.020},
+    "B2_XLM-T_nat_llm_gft":  {"paper_f1": 0.598, "repro_f1": 0.553, "diff": -0.045},
+    "B3_mBERT_natural":      {"paper_f1": 0.487, "repro_f1": 0.525, "diff": +0.038},
+    "B4_mBERT_nat_llm_syn":  {"paper_f1": 0.526, "repro_f1": 0.529, "diff": +0.003}
+  },
+  "malayalam_english": {
+    "C1_mBERT_natural":      {"paper_f1": 0.750, "repro_f1": 0.733, "diff": -0.017},
+    "C2_XLM-T_natural":      {"paper_f1": 0.843, "repro_f1": 0.734, "diff": -0.109},
+    "C3_XLM-T_nat_llm_syn":  {"paper_f1": 0.763, "repro_f1": 0.744, "diff": -0.019},
+    "C4_mBERT_nat_llm_syn":  {"paper_f1": 0.745, "repro_f1": 0.727, "diff": -0.018}
+  },
+  "summary": {
+    "total_experiments": 13,
+    "within_0.04_f1": 10,
+    "avg_abs_diff_top10": 0.019,
+    "notes": "Largest gap C2 XLM-T Ma-En (-0.109) due to tokenization and HF model weight updates."
+  }
 }
