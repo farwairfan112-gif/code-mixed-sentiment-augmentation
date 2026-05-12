@@ -1,0 +1,6 @@
+{
+  "experiment": "A2_sp_xlmt_natural",
+  "model": "XLM-T",
+  "test_f1": 0.5739673526348468,
+  "saved_at": "2026-05-12T08:03:04.776956"
+}
