@@ -1,0 +1,11 @@
+text,label,label_id
+I love this! It's amazing,Positive,0
+Odio esto completamente horrible,Negative,1
+The product is okay nothing special,Neutral,2
+Me encanta que bueno que lo hicieron,Positive,0
+This is the worst experience ever,Negative,1
+No me parece ni bueno ni malo,Neutral,2
+Absolutely fantastic result,Positive,0
+Terribly disappointed with this,Negative,1
+yaar ye toh bahut achha hai,Positive,0
+bilkul bekar hai ye cheez,Negative,1
